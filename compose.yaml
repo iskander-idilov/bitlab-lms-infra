@@ -1,9 +1,16 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:16
+    container_name: lms-db
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: lms_main
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: Cccfff220!
     ports:
-      - '5432'
+      - "5432:5432"
+    volumes:
+      - lms_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  lms_postgres_data:
