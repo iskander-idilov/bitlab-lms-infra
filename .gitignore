@@ -36,4 +36,6 @@ target/
 *.class
 *.log.env
 
+### Other ###
 .env
+bitlab-lms-realm.json

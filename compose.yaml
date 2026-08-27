@@ -26,7 +26,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     container_name: keycloak
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
@@ -36,9 +36,12 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
-
+      KC_HOSTNAME: localhost
+      KC_PROXY_HEADERS: xforwarded
     ports:
       - "8081:8080"
+    volumes:
+      - ./bitlab-lms-realm.json:/opt/keycloak/data/import/bitlab-lms-realm.json
     depends_on:
       - keycloak-db
     restart: unless-stopped
