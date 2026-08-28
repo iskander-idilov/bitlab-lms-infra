@@ -21,6 +21,7 @@ services:
       POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
     volumes:
       - keycloak_postgres_data:/var/lib/postgresql/data
+      - ./insert.sql:/docker-entrypoint-initdb.d/insert.sql
     restart: unless-stopped
 
   keycloak:
@@ -45,6 +46,26 @@ services:
     depends_on:
       - keycloak-db
     restart: unless-stopped
+
+  keycloak-seed-data:
+    image: postgres:16
+    container_name: keycloak-seed-data
+    depends_on:
+      - keycloak
+    volumes:
+      - ./insert.sql:/insert.sql
+    environment:
+      PGPASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    entrypoint: >
+      sh -c "
+      echo 'Waiting for Keycloak realm to be imported...';
+      until psql -h keycloak-db -U keycloak_user -d keycloak -c \"SELECT 1 FROM realm WHERE name = 'bitlab-lms'\" | grep -q '1 row'; do
+        echo 'Still waiting...';
+        sleep 3;
+      done;
+      echo 'Realm found, running insert.sql...';
+      psql -h keycloak-db -U keycloak_user -d keycloak -f /insert.sql
+      "
 
 volumes:
   lms_postgres_data:

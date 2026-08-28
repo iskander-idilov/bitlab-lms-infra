@@ -4,9 +4,9 @@
   "sslRequired": "none",
   "roles": {
     "realm": [
-      { "name": "STUDENT" },
-      { "name": "INSTRUCTOR" },
-      { "name": "ADMIN" }
+      { "name": "ROLE_STUDENT" },
+      { "name": "ROLE_INSTRUCTOR" },
+      { "name": "ROLE_ADMIN" }
     ]
   },
   "clients": [
@@ -37,7 +37,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["STUDENT"]
+      "realmRoles": ["ROLE_STUDENT"]
     }
   ]
 }
