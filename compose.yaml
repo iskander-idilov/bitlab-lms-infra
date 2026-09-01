@@ -1,9 +1,72 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: postgres:16
+    container_name: lms-db
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: lms_main
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '5432'
+      - "5432:5432"
+    volumes:
+      - lms_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  keycloak-db:
+    image: postgres:16
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+      - ./insert.sql:/docker-entrypoint-initdb.d/insert.sql
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: localhost
+      KC_PROXY_HEADERS: xforwarded
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./bitlab-lms-realm.json:/opt/keycloak/data/import/bitlab-lms-realm.json
+    depends_on:
+      - keycloak-db
+    restart: unless-stopped
+
+  keycloak-seed-data:
+    image: postgres:16
+    container_name: keycloak-seed-data
+    depends_on:
+      - keycloak
+    volumes:
+      - ./insert.sql:/insert.sql
+    environment:
+      PGPASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    entrypoint: >
+      sh -c "
+      echo 'Waiting for Keycloak realm to be imported...';
+      until psql -h keycloak-db -U keycloak_user -d keycloak -c \"SELECT 1 FROM realm WHERE name = 'bitlab-lms'\" | grep -q '1 row'; do
+        echo 'Still waiting...';
+        sleep 3;
+      done;
+      echo 'Realm found, running insert.sql...';
+      psql -h keycloak-db -U keycloak_user -d keycloak -f /insert.sql
+      "
+
+volumes:
+  lms_postgres_data:
+  keycloak_postgres_data:

@@ -1,0 +1,43 @@
+{
+  "realm": "bitlab-lms",
+  "enabled": true,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      { "name": "ROLE_STUDENT" },
+      { "name": "ROLE_INSTRUCTOR" },
+      { "name": "ROLE_ADMIN" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "main-service",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8080/*"],
+      "webOrigins": ["http://localhost:8080"]
+    }
+  ],
+  "users": [
+    {
+      "username": "test.student",
+      "email": "test.student@example.com",
+      "firstName": "Test",
+      "lastName": "Student",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${TEST_STUDENT_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ROLE_STUDENT"]
+    }
+  ]
+}
