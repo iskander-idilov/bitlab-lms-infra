@@ -94,8 +94,12 @@ services:
           sleep 3;
         done;
         echo 'MinIO ready, creating bucket...';
-        mc mb minio/dev-bucket --ignore-existing;
-        echo 'Bucket ready';
+        if mc ls minio/dev-bucket >/dev/null 2>&1; then
+          echo 'Bucket dev-bucket already exists';
+        else
+          mc mb minio/dev-bucket;
+          echo 'Bucket created successfully';
+        fi;
       "
 
 volumes:
