@@ -2,6 +2,9 @@
   "realm": "bitlab-lms",
   "enabled": true,
   "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "ssoSessionMaxLifespan": 604800,
+  "ssoSessionIdleTimeout": 604800,
   "roles": {
     "realm": [
       { "name": "ROLE_STUDENT" },
